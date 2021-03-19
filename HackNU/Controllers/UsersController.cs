@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using HackNU.Contracts.Requests;
 using HackNU.Contracts.Responses;
 using HackNU.Data;
-using HackNU.Models;
 using HackNU.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace HackNU.Controllers
@@ -19,13 +16,31 @@ namespace HackNU.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IIdentityService _identityService;
-
-        public UsersController(IIdentityService identityService)
+        private readonly IUserService _userService;
+        public UsersController(IIdentityService identityService, IUserService userService)
         {
             this._identityService = identityService;
+            _userService = userService;
         }
         
-        [HttpPost("login")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("subscribe")]
+        [SwaggerOperation(summary:"Subscribe user to event", description:"Gets user email and event id, subscribing user to event")]
+        [SwaggerResponse(200, "Successful subscribing")]
+        [SwaggerResponse(400, "Invalid parameters")]
+        public async Task<IActionResult> Subscribe([FromBody] UserSubscribeToEventRequest request)
+        {
+            var result = await _userService.SubscribeAsync(request.Email, request.EventId);
+
+            if (!result.Success)
+            {
+                return BadRequest(new InvalidParameterResponse());
+            }
+
+            return Ok(new SuccessResponse());
+        }
+        
+        [HttpGet("login")]
         [SwaggerOperation(summary:"Log in by user email and password", description:"Log in by user email and password")]
         [SwaggerResponse(200, "Successful login")]
         [SwaggerResponse(400, "Invalid parameters")]
@@ -45,6 +60,23 @@ namespace HackNU.Controllers
             {
                 Token = authResponse.Token
             });
+        }
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("load")]
+        [SwaggerOperation(summary:"Sent`s some user information", description:"Sent`s user email, nickname and subscribed events")]
+        [SwaggerResponse(200, "Good request")]
+        [SwaggerResponse(400, "Bad request")]
+        public async Task<IActionResult> LoadUser([FromBody] UserLoadRequest request)
+        {
+            var loadUser = await _userService.LoadUserAsync(request.Email);
+
+            if (loadUser == null)
+            {
+                return BadRequest("User with specified email not found");
+            }
+
+            return Ok(loadUser);
         }
 
         [HttpPost("register")]

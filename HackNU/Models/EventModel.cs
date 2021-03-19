@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace HackNU.Models
 {
@@ -12,5 +14,6 @@ namespace HackNU.Models
         public float Latitude { get; set; }
         public long UnixTime { get; set; } 
         public UserModel Organizer { get; set; }
+        public ICollection<TagModel> Tags { get; set; } = new Collection<TagModel>();
     }
 }

@@ -40,7 +40,8 @@ namespace HackNU
             Configuration.Bind(nameof(JwtOptions), jwtOptions);
             
             services.AddSingleton(jwtOptions);
-            
+
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IIdentityService, IdentityService>();
             

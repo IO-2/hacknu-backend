@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using HackNU.Contracts.Responses;
 using HackNU.Domain;
 using Microsoft.AspNetCore.Authentication;
 
