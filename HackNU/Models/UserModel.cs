@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace HackNU.Models
 {
-    public class UserModel
+    public class UserModel : IdentityUser
     {
-        public string Name { get; set; }
-        public int Age { get; set; }
+        public string Nickname { get; set; }
+        public EventModel Events { get; set; }
     }
 }

@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HackNU.Contracts.Requests;
+using HackNU.Contracts.Responses;
+using HackNU.Models;
+using HackNU.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -12,16 +16,32 @@ namespace HackNU.Controllers
     [Route("users")]
     public class UsersController : ControllerBase
     {
-        public UsersController()
+        private readonly IIdentityService _identityService;
+
+        public UsersController(IIdentityService identityService)
         {
+            this._identityService = identityService;
         }
-        
-        [HttpGet]
-        [SwaggerOperation(summary:"Returns all users", description:"Returns all users")]
-        [SwaggerResponse(200, "Returns all users")]
-        public IActionResult Get()
+
+        [HttpPost("register")]
+        [SwaggerOperation(summary:"Registers new user", description:"Register a new user in a system")]
+        [SwaggerResponse(200, "Registers new user")]
+        public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
         {
-            return Ok(new{name = "Hello", age = 15});
+            var authResponse = await _identityService.RegisterAsync(request.Email, request.Nickname, request.Password);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFailedResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok(new AuthSuccessResponse
+            {
+                Token = authResponse.Token
+            });
         }
     }
 }

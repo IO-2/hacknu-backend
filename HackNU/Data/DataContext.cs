@@ -1,20 +1,17 @@
 using HackNU.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HackNU.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<UserModel>
     {
-        public DbSet<UserModel> Users { get; set; }
+        public DbSet<EventModel> Events { get; set; }
         
-        public DataContext()
+        public DataContext(DbContextOptions<DataContext> options)
+            : base(options)
         {
             Database.EnsureCreated();
-        }
-        
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=hacknudb;Username=hacknuadmin;Password=HackNU2021TeamIO");
         }
     }
 }
