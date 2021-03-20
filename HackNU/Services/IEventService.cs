@@ -11,6 +11,6 @@ namespace HackNU.Services
     {
         Task<CreateResult> CreateAsync(CreateEventContract eventContract, string organizerEmail);
         Task<IList<EventSummary>> FindAsync(GetEventsRequest request);
-        Task<SubscribeResult> SubscribeAsync(int eventId, int tagId);
+        Task<SubscribeResult> SubscribeAsync(string email, int eventId, int tagId);
     }
 }

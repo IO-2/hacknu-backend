@@ -42,7 +42,8 @@ namespace HackNU.Controllers
         [SwaggerResponse(400, "Invalid parameters")]
         public async Task<IActionResult> Subscribe(int eventId, int tagId)
         {
-            var result = await _eventService.SubscribeAsync(eventId, tagId);
+            string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _eventService.SubscribeAsync(email, eventId, tagId);
 
             if (!result.Success)
             {
