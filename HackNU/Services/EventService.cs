@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Castle.Core.Internal;
 using HackNU.Contracts;
+using HackNU.Contracts.Requests;
 using HackNU.Contracts.Responses;
 using HackNU.Data;
 using HackNU.Domain;
@@ -24,13 +26,13 @@ namespace HackNU.Services
             _userManager = userManager;
         }
         
-        public async Task<EventCreateResult> CreateAsync(CreateEventContract eventContract)
+        public async Task<CreateResult> CreateAsync(CreateEventContract eventContract)
         {
             UserModel organizer = await _userManager.FindByEmailAsync(eventContract.OrganizerEmail);
 
             if (organizer == null)
             {
-                return new EventCreateResult
+                return new CreateResult
                 {
                     Errors = new []{"User with specified email does not exists"}
                 };
@@ -50,50 +52,87 @@ namespace HackNU.Services
             await _context.Events.AddAsync(newEvent);
             await _context.SaveChangesAsync();
 
-            return new EventCreateResult
+            return new CreateResult
             {
                 Success = true
             };
         }
 
-        public async Task<IList<EventSummary>> FindAsync(string city)
+        public async Task<IList<EventSummary>> FindAsync(GetEventsRequest request)
         {
-            return FindInCity(city);
+            var byCity = FindInCity(request.City);
+            var result = byCity;
+
+            if (request.Query != null)
+            {
+                result = Query(result, request.Query);
+            }
+            
+            if (request.DateAscending != null)
+            {
+                result = SortByDate(result, request.DateAscending ?? true);
+            }
+            
+            if (request.EventLocation != null)
+            {
+                result = SortByLocation(result, request.EventLocation.Longitude, request.EventLocation.Latitude,
+                    request.EventLocation.Ascending);
+            }
+            
+            if (!request.Tags.IsNullOrEmpty())
+            {
+                result = result.Where(x => 
+                    x.Tags.Any(xx => 
+                        request.Tags!.Contains(xx.Id))).ToList();
+            }
+            
+            return result;
         }
 
-        public async Task<IList<EventSummary>> FindSortByDateAsync(string city, bool dateAscending)
+        private IList<EventSummary> SortByDate(IList<EventSummary> list, bool ascending)
         {
-            var events = FindInCity(city);
             var result = new List<EventSummary>();
             
-            if (dateAscending)
+            if (ascending)
             {
-                result = events.OrderByDescending(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
+                result = list.OrderByDescending(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
             }
             else
             {
-                result = events.OrderBy(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
+                result = list.OrderBy(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
             }
 
             return result;
         }
 
-        public async Task<IList<EventSummary>> FindNearestAsync(string city, float longitude, float latitude)
+        private IList<EventSummary> SortByLocation(IList<EventSummary> list, float longitude, float latitude, bool ascending)
         {
-            var events = FindInCity(city);
-
-            var result = events.OrderBy(x =>
+            var result = new List<EventSummary>();
+            if (ascending)
             {
-                var loc = new Location {Latitude = x.Latitude, Longitude = x.Longitude};
-                var point = new Location {Latitude = latitude, Longitude = longitude};
+                result = list.OrderBy(x =>
+                {
+                    var loc = new Location {Latitude = x.Latitude, Longitude = x.Longitude};
+                    var point = new Location {Latitude = latitude, Longitude = longitude};
 
-                return CalculateDistance(loc, point);
-            });
+                    return CalculateDistance(loc, point);
+                }).ToList();
+            }
+            else
+            {
+                result = list.OrderByDescending(x =>
+                {
+                    var loc = new Location {Latitude = x.Latitude, Longitude = x.Longitude};
+                    var point = new Location {Latitude = latitude, Longitude = longitude};
+
+                    return CalculateDistance(loc, point);
+                }).ToList();
+            }
 
             return result.ToList();
         }
 
-        public IList<EventSummary> Query(IList<EventSummary> list, string query)
+        private IList<EventSummary> Query(IList<EventSummary> list, string query)
         {
             var result = list.Where(x => x.Name.ToLower().Contains(query.ToLower()));
             return result.ToList();

@@ -43,6 +43,7 @@ namespace HackNU
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEventService, EventService>();
+            services.AddScoped<ITagsService, TagsService>();
             services.AddScoped<IIdentityService, IdentityService>();
             
 
