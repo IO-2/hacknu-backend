@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HackNU.Contracts.Requests;
 using HackNU.Contracts.Responses;
@@ -18,22 +20,24 @@ namespace HackNU.Controllers
         private readonly IIdentityService _identityService;
         private readonly IUserService _userService;
         private readonly DataContext _context;
+        
         public UsersController(IIdentityService identityService, IUserService userService, DataContext context)
         {
-            this._identityService = identityService;
+            _identityService = identityService;
             _userService = userService;
             _context = context;
         }
         
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("subscribe")]
-        [SwaggerOperation(summary:"Subscribe user to event", description:"Gets user email and event id, subscribing user to event")]
+        [SwaggerOperation(summary:"Subscribe user to event", description:"Subscribe user to event with specified event_id")]
         [SwaggerResponse(200, "Successful subscribing")]
         [SwaggerResponse(400, "Invalid parameters")]
-        public async Task<IActionResult> Subscribe([FromBody] UserSubscribeToEventRequest request)
+        public async Task<IActionResult> Subscribe([FromBody] int eventId)
         {
-            var result = await _userService.SubscribeAsync(request.Email, request.EventId);
-
+            string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _userService.SubscribeAsync(email, eventId);
+            
             if (!result.Success)
             {
                 return BadRequest(new InvalidParameterResponse());
@@ -65,13 +69,14 @@ namespace HackNU.Controllers
         }
         
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("load")]
+        [HttpGet("load")]
         [SwaggerOperation(summary:"Sent`s some user information", description:"Sent`s user email, nickname and subscribed events")]
         [SwaggerResponse(200, "Good request")]
         [SwaggerResponse(400, "Bad request")]
-        public async Task<IActionResult> LoadUser([FromBody] UserLoadRequest request)
+        public async Task<IActionResult> LoadUser()
         {
-            var loadUser = await _userService.LoadUserAsync(request.Email);
+            string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var loadUser = await _userService.LoadUserAsync(email);
 
             if (loadUser == null)
             {

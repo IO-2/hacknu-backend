@@ -48,7 +48,7 @@ namespace HackNU.Controllers
             return Ok(result);
         }
         
-        [HttpPost("get/sorted-by-location")]
+        [HttpPost("get/search/sorted-by-location")]
         [SwaggerOperation(summary:"Return`s all events in city sorted by nearest with query", description:"Return`s all events in city sorted by nearest with query")]
         [SwaggerResponse(200, "Return`s events")]
         [SwaggerResponse(400, "Invalid parameters")]
