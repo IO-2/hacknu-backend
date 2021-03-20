@@ -25,8 +25,8 @@ namespace HackNU.Controllers
         }
         
         [HttpPost("get")]
-        [SwaggerOperation(summary:"Return`s some events in specific order", description:"Return`s some events in specific order")]
-        [SwaggerResponse(200, "Return`s events")]
+        [SwaggerOperation(summary:"Returns some events in specific order", description:"Returns some events in specific order")]
+        [SwaggerResponse(200, "Returns events")]
         [SwaggerResponse(400, "Invalid parameters")]
         public async Task<IActionResult> Get([FromBody] GetEventsRequest request)
         {
@@ -36,9 +36,10 @@ namespace HackNU.Controllers
             return Ok(events);
         }
         
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("subscribe-to-tag")]
-        [SwaggerOperation(summary:"Return`s some events in specific order", description:"Return`s some events in specific order")]
-        [SwaggerResponse(200, "Return`s events")]
+        [SwaggerOperation(summary:"Returns some events in specific order", description:"Returns some events in specific order")]
+        [SwaggerResponse(200, "Returns events")]
         [SwaggerResponse(400, "Invalid parameters")]
         public async Task<IActionResult> Subscribe(int eventId, int tagId)
         {

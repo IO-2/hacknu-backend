@@ -94,11 +94,12 @@ namespace HackNU.Services
             // Filter by tags
             if (!request.Tags.IsNullOrEmpty())
             {
-                result = result.Where(x => 
-                    x.Tags.Any(xx => 
-                        request.Tags!.Contains(xx.Id))).ToList();
+                result = result.Where(x =>
+                    x.Tags.Any(xx =>
+                        request.Tags!.Contains(xx.Id)))
+                    .ToList();
             }
-            
+
             return result;
         }
 
@@ -224,6 +225,7 @@ namespace HackNU.Services
                     Tags = tags,
                     UnixTime = x.UnixTime
                 });
+                tags = new List<TagSummary>();
             }
 
             return result;
