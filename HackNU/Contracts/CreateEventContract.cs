@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace HackNU.Contracts
@@ -9,8 +10,7 @@ namespace HackNU.Contracts
         public string City { get; set; }
         public float Longitude { get; set; }
         public float Latitude { get; set; }
-        [EmailAddress]
-        public string OrganizerEmail { get; set; }
         public long UnixTime { get; set; }
+        public ICollection<int> TagIds { get; set; }
     }
 }

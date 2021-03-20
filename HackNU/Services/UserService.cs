@@ -67,13 +67,13 @@ namespace HackNU.Services
             return loadUser;
         }
 
-        public async Task<SubscribeUserResult> SubscribeAsync(string email, int id)
+        public async Task<SubscribeResult> SubscribeAsync(string email, int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
 
             if (user == null)
             {
-                return new SubscribeUserResult
+                return new SubscribeResult
                 {
                     Errors = new []{"User with specified email not found"}
                 };
@@ -83,7 +83,7 @@ namespace HackNU.Services
 
             if (toAttend == null)
             {
-                return new SubscribeUserResult
+                return new SubscribeResult
                 {
                     Errors = new[]{$"Event with id {id} does not exists"}
                 };
@@ -91,7 +91,7 @@ namespace HackNU.Services
 
             if (user.Events.FirstOrDefault(x => x.Id == id) != null)
             {
-                return new SubscribeUserResult
+                return new SubscribeResult
                 {
                     Errors = new[]{"User is already subscribed to event"}
                 };
@@ -108,7 +108,7 @@ namespace HackNU.Services
             //     };
             // }
             
-            return new SubscribeUserResult
+            return new SubscribeResult
             {
                 Success = true
             };

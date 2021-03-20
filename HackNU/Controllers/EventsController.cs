@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HackNU.Contracts;
 using HackNU.Contracts.Requests;
@@ -30,9 +31,25 @@ namespace HackNU.Controllers
         public async Task<IActionResult> Get([FromBody] GetEventsRequest request)
         {
             var events = await _eventService.FindAsync(request);
-            
+
             // TODO: Add city validation
             return Ok(events);
+        }
+        
+        [HttpPut("subscribe-to-tag")]
+        [SwaggerOperation(summary:"Return`s some events in specific order", description:"Return`s some events in specific order")]
+        [SwaggerResponse(200, "Return`s events")]
+        [SwaggerResponse(400, "Invalid parameters")]
+        public async Task<IActionResult> Subscribe(int eventId, int tagId)
+        {
+            var result = await _eventService.SubscribeAsync(eventId, tagId);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok(new SuccessResponse());
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -43,7 +60,9 @@ namespace HackNU.Controllers
         [SwaggerResponse(401, "No access. Token needed")]
         public async Task<IActionResult> Create([FromBody] CreateEventContract eventContract)
         {
-            var createResult = await _eventService.CreateAsync(eventContract);
+            string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var createResult = await _eventService.CreateAsync(eventContract, email);
+            
             if (!createResult.Success)
             {
                 return BadRequest(new InvalidParameterResponse());

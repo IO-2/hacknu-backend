@@ -9,7 +9,8 @@ namespace HackNU.Services
 {
     public interface IEventService
     {
-        Task<CreateResult> CreateAsync(CreateEventContract eventContract);
+        Task<CreateResult> CreateAsync(CreateEventContract eventContract, string organizerEmail);
         Task<IList<EventSummary>> FindAsync(GetEventsRequest request);
+        Task<SubscribeResult> SubscribeAsync(int eventId, int tagId);
     }
 }

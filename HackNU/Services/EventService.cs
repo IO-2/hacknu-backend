@@ -26,18 +26,8 @@ namespace HackNU.Services
             _userManager = userManager;
         }
         
-        public async Task<CreateResult> CreateAsync(CreateEventContract eventContract)
+        public async Task<CreateResult> CreateAsync(CreateEventContract eventContract, string organizerEmail)
         {
-            UserModel organizer = await _userManager.FindByEmailAsync(eventContract.OrganizerEmail);
-
-            if (organizer == null)
-            {
-                return new CreateResult
-                {
-                    Errors = new []{"User with specified email does not exists"}
-                };
-            }
-
             EventModel newEvent = new EventModel
             {
                 Name = eventContract.Name,
@@ -46,11 +36,16 @@ namespace HackNU.Services
                 City = eventContract.City,
                 Longitude = eventContract.Longitude,
                 Latitude = eventContract.Latitude,
-                OrganizerEmail = organizer.Email
+                OrganizerEmail = organizerEmail
             };
-            
+
             await _context.Events.AddAsync(newEvent);
             await _context.SaveChangesAsync();
+            
+            foreach (var tag in eventContract.TagIds)
+            {
+                await SubscribeAsync(newEvent.Id, tag);
+            }
 
             return new CreateResult
             {
@@ -87,6 +82,37 @@ namespace HackNU.Services
             }
             
             return result;
+        }
+
+        public async Task<SubscribeResult> SubscribeAsync(int eventId, int tagId)
+        {
+            var eventToSubscribe = await _context.Events.FirstOrDefaultAsync(x => x.Id == eventId);
+            var tagToPin = await _context.Tags.FirstOrDefaultAsync(x => x.Id == tagId);
+
+            if (eventToSubscribe == null)
+            {
+                return new SubscribeResult
+                {
+                    Errors = new[] {"Event does not exists"}
+                };
+            }
+
+            if (tagToPin == null)
+            {
+                return new SubscribeResult
+                {
+                    Errors = new[] {"Tag does not exists"}
+                };
+            }
+
+            eventToSubscribe.Tags.Add(tagToPin);
+            tagToPin.EventsWithTag.Add(eventToSubscribe);
+            await _context.SaveChangesAsync();
+            
+            return new SubscribeResult
+            {
+                Success = true
+            };
         }
 
         private IList<EventSummary> SortByDate(IList<EventSummary> list, bool ascending)
