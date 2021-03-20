@@ -1,17 +1,11 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using HackNU.Models;
 
-namespace HackNU.Models
+namespace HackNU.Contracts
 {
-    public class EventModel
+    public class EventSummary
     {
-        public EventModel()
-        {
-            Tags = new List<TagModel>();
-            Attending = new List<UserModel>();
-        }
-        
         public int Id { get; set; }
         public string Name { get; set; }
         public string City { get; set; }
@@ -21,7 +15,6 @@ namespace HackNU.Models
         public long UnixTime { get; set; } 
         [ForeignKey("UserModel")]
         public string OrganizerEmail { get; set; }
-        public virtual ICollection<TagModel> Tags { get; set; }
-        public virtual ICollection<UserModel> Attending { get; set; } 
+        public virtual ICollection<TagSummary> Tags { get; set; }
     }
 }

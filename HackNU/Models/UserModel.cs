@@ -6,7 +6,12 @@ namespace HackNU.Models
 {
     public class UserModel : IdentityUser
     {
+        public UserModel()
+        {
+            Events = new List<EventModel>();
+        }
+        
         public string Nickname { get; set; }
-        public ICollection<EventModel> Events { get; set; } = new Collection<EventModel>();
+        public virtual ICollection<EventModel> Events { get; set; }
     }
 }

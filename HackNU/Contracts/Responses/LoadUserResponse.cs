@@ -9,6 +9,6 @@ namespace HackNU.Contracts.Responses
         public string Email { get; set; }
         public string Nickname { get; set; }
 
-        public IEnumerable<EventModel> Events { get; set; }
+        public IEnumerable<EventSummary> Events { get; set; }
     }
 }

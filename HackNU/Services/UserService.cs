@@ -1,38 +1,67 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HackNU.Contracts;
 using HackNU.Contracts.Responses;
 using HackNU.Data;
 using HackNU.Domain;
 using HackNU.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace HackNU.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<UserModel> _userManager;
         private readonly DataContext _context;
         
-        public UserService(UserManager<UserModel> userManager, DataContext context)
+        public UserService(DataContext context)
         {
-            _userManager = userManager;
             _context = context;
         }
         
         public async Task<LoadUserResponse> LoadUserAsync(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
 
             if (user == null)
             {
                 return null;
             }
+
+            var eventSummary = new List<EventSummary>();
             
+            foreach (var e in user.Events)
+            {
+                var tags = new List<TagSummary>();
+                foreach (var tag in e.Tags)
+                {
+                    tags.Add(new TagSummary
+                    {
+                        Id = tag.Id,
+                        Text = tag.Text
+                    });
+                }
+                eventSummary.Add(new EventSummary
+                {
+                    Id = e.Id,
+                    City = e.City,
+                    Description = e.Description,
+                    Latitude = e.Latitude,
+                    Longitude = e.Longitude,
+                    Name = e.Name,
+                    OrganizerEmail = e.OrganizerEmail,
+                    Tags = tags,
+                    UnixTime = e.UnixTime
+                });
+            }
+
             var loadUser = new LoadUserResponse
             {
                 Nickname = user.Nickname,
                 Email = user.Email,
-                Events = user.Events
+                Events = eventSummary
             };
 
             return loadUser;
@@ -40,7 +69,7 @@ namespace HackNU.Services
 
         public async Task<SubscribeUserResult> SubscribeAsync(string email, int id)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
 
             if (user == null)
             {
@@ -50,7 +79,6 @@ namespace HackNU.Services
                 };
             }
             
-            // Why this line adds event to user???????????????? WHYYYYY
             var toAttend = _context.Events.FirstOrDefault(x => x.Id == id);
 
             if (toAttend == null)
@@ -61,18 +89,24 @@ namespace HackNU.Services
                 };
             }
 
-            user.Events.Add(toAttend);
-
-            // Not updating properly
-            var identityResult = await _userManager.UpdateAsync(user);
-
-            if (!identityResult.Succeeded)
+            if (user.Events.FirstOrDefault(x => x.Id == id) != null)
             {
                 return new SubscribeUserResult
                 {
-                    Errors = identityResult.Errors.Select(x => x.Description)
+                    Errors = new[]{"User is already subscribed to event"}
                 };
             }
+            user.Events.Add(toAttend);
+
+            await _context.SaveChangesAsync();
+
+            // if (!identityResult.Succeeded)
+            // {
+            //     return new SubscribeUserResult
+            //     {
+            //         Errors = identityResult.Errors.Select(x => x.Description)
+            //     };
+            // }
             
             return new SubscribeUserResult
             {

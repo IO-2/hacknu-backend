@@ -65,10 +65,12 @@ namespace HackNU
                         ValidateLifetime = true
                     };
                 });
-            
+
             services.AddDbContext<DataContext>(x =>
             {
-                x.UseNpgsql(Configuration.GetConnectionString("Default"));
+                x
+                    .UseLazyLoadingProxies()
+                    .UseNpgsql(Configuration.GetConnectionString("Default"));
             });
 
             services.AddIdentity<UserModel, IdentityRole>()

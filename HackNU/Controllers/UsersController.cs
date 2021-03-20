@@ -17,11 +17,20 @@ namespace HackNU.Controllers
     {
         private readonly IIdentityService _identityService;
         private readonly IUserService _userService;
-        public UsersController(IIdentityService identityService, IUserService userService)
+        private readonly DataContext _context;
+        public UsersController(IIdentityService identityService, IUserService userService, DataContext context)
         {
             this._identityService = identityService;
             _userService = userService;
+            _context = context;
         }
+        
+        // [HttpPost]
+        // public async Task<IActionResult> Subscribe([FromBody] UserLoadRequest request)
+        // {
+        //     var user = _context.Users.FirstOrDefault(x => x.Email == request.Email);
+        //     return Ok(user);
+        // }
         
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("subscribe")]
@@ -40,7 +49,7 @@ namespace HackNU.Controllers
             return Ok(new SuccessResponse());
         }
         
-        [HttpGet("login")]
+        [HttpPost("login")]
         [SwaggerOperation(summary:"Log in by user email and password", description:"Log in by user email and password")]
         [SwaggerResponse(200, "Successful login")]
         [SwaggerResponse(400, "Invalid parameters")]
@@ -63,7 +72,7 @@ namespace HackNU.Controllers
         }
         
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("load")]
+        [HttpPost("load")]
         [SwaggerOperation(summary:"Sent`s some user information", description:"Sent`s user email, nickname and subscribed events")]
         [SwaggerResponse(200, "Good request")]
         [SwaggerResponse(400, "Bad request")]
