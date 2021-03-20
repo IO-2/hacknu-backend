@@ -25,13 +25,6 @@ namespace HackNU.Controllers
             _context = context;
         }
         
-        // [HttpPost]
-        // public async Task<IActionResult> Subscribe([FromBody] UserLoadRequest request)
-        // {
-        //     var user = _context.Users.FirstOrDefault(x => x.Email == request.Email);
-        //     return Ok(user);
-        // }
-        
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("subscribe")]
         [SwaggerOperation(summary:"Subscribe user to event", description:"Gets user email and event id, subscribing user to event")]

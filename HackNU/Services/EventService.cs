@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Castle.Core.Internal;
 using HackNU.Contracts;
+using HackNU.Contracts.Responses;
 using HackNU.Data;
 using HackNU.Domain;
 using HackNU.Models;
@@ -54,7 +56,61 @@ namespace HackNU.Services
             };
         }
 
-        public async Task<IEnumerable<EventSummary>> FindAsync(string city)
+        public async Task<IList<EventSummary>> FindAsync(string city)
+        {
+            return FindInCity(city);
+        }
+
+        public async Task<IList<EventSummary>> FindSortByDateAsync(string city, bool dateAscending)
+        {
+            var events = FindInCity(city);
+            var result = new List<EventSummary>();
+            
+            if (dateAscending)
+            {
+                result = events.OrderByDescending(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
+            }
+            else
+            {
+                result = events.OrderBy(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
+            }
+
+            return result;
+        }
+
+        public async Task<IList<EventSummary>> FindNearestAsync(string city, float longitude, float latitude)
+        {
+            var events = FindInCity(city);
+
+            var result = events.OrderBy(x =>
+            {
+                var loc = new Location {Latitude = x.Latitude, Longitude = x.Longitude};
+                var point = new Location {Latitude = latitude, Longitude = longitude};
+
+                return CalculateDistance(loc, point);
+            });
+
+            return result.ToList();
+        }
+
+        public IList<EventSummary> Query(IList<EventSummary> list, string query)
+        {
+            var result = list.Where(x => x.Name.ToLower().Contains(query.ToLower()));
+            return result.ToList();
+        }
+
+        private double CalculateDistance(Location point1, Location point2)
+        {
+            var d1 = point1.Latitude * (Math.PI / 180.0);
+            var num1 = point1.Longitude * (Math.PI / 180.0);
+            var d2 = point2.Latitude * (Math.PI / 180.0);
+            var num2 = point2.Longitude * (Math.PI / 180.0) - num1;
+            var d3 = Math.Pow(Math.Sin((d2 - d1) / 2.0), 2.0) +
+                     Math.Cos(d1) * Math.Cos(d2) * Math.Pow(Math.Sin(num2 / 2.0), 2.0);
+            return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
+        }
+
+        private IList<EventSummary> FindInCity(string city)
         {
             var events = _context.Events
                 .Where(x => x.City == city)
@@ -89,5 +145,11 @@ namespace HackNU.Services
 
             return result;
         }
+    }
+
+    public struct Location
+    {
+        public float Longitude { get; set; }
+        public float Latitude { get; set; }
     }
 }
