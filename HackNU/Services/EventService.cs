@@ -58,6 +58,16 @@ namespace HackNU.Services
             var byCity = FindInCity(request.City);
             var result = byCity;
 
+            if (request.DayCount != null)
+            {
+                var now = DateTimeOffset.Now.AddDays(request.DayCount ?? 0).ToUnixTimeSeconds();
+                var end = DateTimeOffset.Now.AddDays(request.DayCount + 1 ?? 1).ToUnixTimeSeconds();
+
+                result = result
+                    .Where(x => x.UnixTime > now && x.UnixTime < end)
+                    .ToList();
+            }
+
             if (request.Query != null)
             {
                 result = Query(result, request.Query);
@@ -68,10 +78,10 @@ namespace HackNU.Services
                 result = SortByDate(result, request.DateAscending ?? true);
             }
             
-            if (request.EventLocation != null)
+            if (request.UserLocation != null)
             {
-                result = SortByLocation(result, request.EventLocation.Longitude, request.EventLocation.Latitude,
-                    request.EventLocation.Ascending);
+                result = SortByLocation(result, request.UserLocation.Longitude, request.UserLocation.Latitude,
+                    request.UserLocation.Ascending);
             }
             
             if (!request.Tags.IsNullOrEmpty())

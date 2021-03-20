@@ -33,10 +33,28 @@ namespace HackNU.Controllers
         [SwaggerOperation(summary:"Subscribe user to event", description:"Subscribe user to event with specified event_id")]
         [SwaggerResponse(200, "Successful subscribing")]
         [SwaggerResponse(400, "Invalid parameters")]
-        public async Task<IActionResult> Subscribe([FromBody] int eventId)
+        public async Task<IActionResult> Subscribe(int eventId)
         {
             string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _userService.SubscribeAsync(email, eventId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new InvalidParameterResponse());
+            }
+
+            return Ok(new SuccessResponse());
+        }
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("unsubscribe")]
+        [SwaggerOperation(summary:"Unsubscribe user from event", description:"Unsubscribe user from event with specified event_id")]
+        [SwaggerResponse(200, "Successful subscribing")]
+        [SwaggerResponse(400, "Invalid parameters")]
+        public async Task<IActionResult> Unsubscribe(int eventId)
+        {
+            string email = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _userService.UnsubscribeAsync(email, eventId);
             
             if (!result.Success)
             {

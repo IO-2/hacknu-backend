@@ -8,5 +8,6 @@ namespace HackNU.Services
     {
         Task<LoadUserResponse> LoadUserAsync(string email);
         Task<SubscribeResult> SubscribeAsync(string email, int id);
+        Task<SubscribeResult> UnsubscribeAsync(string email, int eventId);
     }
 }

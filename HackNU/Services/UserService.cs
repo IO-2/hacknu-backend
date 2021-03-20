@@ -99,14 +99,45 @@ namespace HackNU.Services
             user.Events.Add(toAttend);
 
             await _context.SaveChangesAsync();
+            
+            return new SubscribeResult
+            {
+                Success = true
+            };
+        }
 
-            // if (!identityResult.Succeeded)
-            // {
-            //     return new SubscribeUserResult
-            //     {
-            //         Errors = identityResult.Errors.Select(x => x.Description)
-            //     };
-            // }
+        public async Task<SubscribeResult> UnsubscribeAsync(string email, int eventId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (user == null)
+            {
+                return new SubscribeResult
+                {
+                    Errors = new []{"User with specified email not found"}
+                };
+            }
+            
+            var toUnsubscribe = _context.Events.FirstOrDefault(x => x.Id == eventId);
+
+            if (toUnsubscribe == null)
+            {
+                return new SubscribeResult
+                {
+                    Errors = new[]{$"Event with id {eventId} does not exists"}
+                };
+            }
+
+            if (user.Events.FirstOrDefault(x => x.Id == eventId) == null)
+            {
+                return new SubscribeResult
+                {
+                    Errors = new[]{"User is not subscribed to event"}
+                };
+            }
+            
+            user.Events.Remove(toUnsubscribe);
+            await _context.SaveChangesAsync();
             
             return new SubscribeResult
             {
