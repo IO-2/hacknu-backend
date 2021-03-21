@@ -1,4 +1,4 @@
-# Team IO backend
-Hackaton HackNU backend project Team IO
+# Connect app backend
 
+## Routes
 ![alt-text](./image.png)
