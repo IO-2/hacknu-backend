@@ -134,11 +134,20 @@ namespace HackNU.Services
             };
         }
 
+        public async Task<ICollection<string>> GetCities()
+        {
+            var events = _context.Events.ToList();
+            var cities = events
+                .Select(x => x.City)
+                .ToHashSet();
+            return cities;
+        }
+
         private IList<EventSummary> SortByDate(IList<EventSummary> list, bool ascending)
         {
             var result = new List<EventSummary>();
             
-            if (ascending)
+            if (!ascending)
             {
                 result = list.OrderByDescending(x => (x.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds())).ToList();
             }
@@ -153,7 +162,7 @@ namespace HackNU.Services
         private IList<EventSummary> SortByLocation(IList<EventSummary> list, float longitude, float latitude, bool ascending)
         {
             var result = new List<EventSummary>();
-            if (ascending)
+            if (!ascending)
             {
                 result = list.OrderBy(x =>
                 {

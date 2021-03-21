@@ -36,6 +36,17 @@ namespace HackNU.Controllers
             return Ok(events);
         }
         
+        [HttpGet("get/cities")]
+        [SwaggerOperation(summary:"Returns some events in specific order", description:"Returns some events in specific order")]
+        [SwaggerResponse(200, "Returns events")]
+        [SwaggerResponse(400, "Invalid parameters")]
+        public async Task<IActionResult> Get()
+        {
+            var cities = await _eventService.GetCities();
+            
+            return Ok(cities);
+        }
+        
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("subscribe-to-tag")]
         [SwaggerOperation(summary:"Returns some events in specific order", description:"Returns some events in specific order")]
