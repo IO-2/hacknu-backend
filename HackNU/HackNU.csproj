@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <UserSecretsId>c48a824a-5f78-4a31-94ed-12cf1d7a3d08</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="EntityFramework" Version="6.4.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.4" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
